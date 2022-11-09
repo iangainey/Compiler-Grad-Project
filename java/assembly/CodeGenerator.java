@@ -281,9 +281,11 @@ public class CodeGenerator extends AbstractASTVisitor<CodeObject> {
 		switch(left.getType()) {
 			case INT: 
 				il.add(new Mv((right.temp), (left.temp)));
+				//il.add(new Sw(right.temp, left.temp, "0"));
 			break;
 			case FLOAT: 
 				il.add(new FMv((right.temp), (left.temp)));
+				//il.add(new Fsw(right.temp, left.temp, "0"));
 			break;
 			default:
 				throw new Error("Issue in 3AC assignment");
@@ -917,6 +919,7 @@ public class CodeGenerator extends AbstractASTVisitor<CodeObject> {
 		//InstructionList BBs[] = (generateBasicBlocks(getIntRegCount(), getFloatRegCount(), body, node.getScope()));
 		LocalRegisterAllocator regAlloc = new LocalRegisterAllocator();
 		il.addAll(regAlloc.allocate(body, node).code);
+		//il.addAll(body.code);
 
 		
 
