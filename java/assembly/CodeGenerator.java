@@ -124,7 +124,7 @@ public class CodeGenerator extends AbstractASTVisitor<CodeObject> {
 
 		CodeObject co = new CodeObject();
 		
-		
+		//co.code.add(new Label("Left Type: " + String.valueOf(left.getType()) + " Right Type: " + String.valueOf(right.getType())));
 		//If left child is an lval, add load then add code
 		if (left.lval == true) {
 			left = rvalify(left);
@@ -152,17 +152,18 @@ public class CodeGenerator extends AbstractASTVisitor<CodeObject> {
 		}
 		//co.code.add(new Label("Right Code"));
 		co.code.addAll(right.code);
-		if ((left.getType() != null && right.getType() != null) && left.getType().type != right.getType().type) {
+		//If left or right type is not null, and left and right type are not equal, and neither left or right type are pointers
+		if ((left.getType() != null && right.getType() != null) && left.getType().type != right.getType().type && (left.getType().type != Scope.InnerType.PTR && right.getType().type != Scope.InnerType.PTR)) {
 			if (right.getType().type == Scope.InnerType.INT) {
 				//Need to convert to a float
-				/* 
+				///* 
 				Instruction ItoFloat = new IMovf(right.temp, generateTemp(Scope.InnerType.FLOAT));
 				co.code.add(ItoFloat);
 				right.temp = ItoFloat.getDest();
 				right.type = left.getType();
 				//co.type = right.getType();
 				//node.setType(left.getType());
-				*/
+				//*/
 				
 			}
 		} else {
