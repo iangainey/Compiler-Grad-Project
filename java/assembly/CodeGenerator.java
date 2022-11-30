@@ -216,7 +216,7 @@ public class CodeGenerator extends AbstractASTVisitor<CodeObject> {
 					co.temp = iD.getDest();
 					break;
 				default:
-					throw new Error("Issue with operator");
+					//throw new Error("Issue with operator");
 			}
 			break;
 			case FLOAT: 
@@ -243,13 +243,13 @@ public class CodeGenerator extends AbstractASTVisitor<CodeObject> {
 					co.temp = iD.getDest();
 					break;
 				default:
-					throw new Error("Issue with operator");
+					//throw new Error("Issue with operator");
 			}
 			break;
 			case STRING: 
-				throw new Error("Cannot perform operation on a string");
+				//throw new Error("Cannot perform operation on a string");
 			default:
-				throw new Error("Issue with binary operation" + String.valueOf(node.getType().type));
+				//throw new Error("Issue with binary operation" + String.valueOf(node.getType().type));
 
 		}
 		}
@@ -461,7 +461,7 @@ public class CodeGenerator extends AbstractASTVisitor<CodeObject> {
 						co.temp = ptrSw.getDest();
 						co.type = left.getType();
 					break;
-					default: throw new Error("Issue in load in rvalify" + String.valueOf(left.getType().type));
+					//default: throw new Error("Issue in load in rvalify" + String.valueOf(left.getType().type));
 				}
 
 				co.code.addAll(il);
@@ -496,7 +496,7 @@ public class CodeGenerator extends AbstractASTVisitor<CodeObject> {
 						il.add(new Fsw(right.temp, left.temp, "0"));
 						break;
 					default:
-						throw new Error("Not able to assign an int or float");
+						//throw new Error("Not able to assign an int or float");
 				}
 				//Add instruction list code to code object
 				co.code.addAll(il);
@@ -519,7 +519,7 @@ public class CodeGenerator extends AbstractASTVisitor<CodeObject> {
 					co.code.add(new Fsw(right.temp, left.temp, "0"));
 				break;
 				default:
-					throw new Error("Invalid type" + String.valueOf(node.getType().type));
+					//throw new Error("Invalid type" + String.valueOf(node.getType().type));
 			}
 			
 			co.type = left.getType();
@@ -1572,7 +1572,7 @@ public class CodeGenerator extends AbstractASTVisitor<CodeObject> {
 					co.temp = ptrLoad.getDest();
 					co.type = lco.getType();
 				 break;
-				 default: throw new Error("Issue in load in rvalify");
+				 //default: throw new Error("Issue in load in rvalify");
 			 }
 			 il.addAll(lco.code);
 		 }
@@ -1616,7 +1616,7 @@ public class CodeGenerator extends AbstractASTVisitor<CodeObject> {
 					co.temp = loadPtr.getDest();
 				 break;
 				 default:
-					 throw new Error("Issue in rvalify");
+					 //throw new Error("Issue in rvalify");
 			 }
 		 }
 		
