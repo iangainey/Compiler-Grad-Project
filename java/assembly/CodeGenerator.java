@@ -124,6 +124,7 @@ public class CodeGenerator extends AbstractASTVisitor<CodeObject> {
 
 		CodeObject co = new CodeObject();
 		
+		
 		//If left child is an lval, add load then add code
 		if (left.lval == true) {
 			left = rvalify(left);
@@ -154,40 +155,23 @@ public class CodeGenerator extends AbstractASTVisitor<CodeObject> {
 		if ((left.getType() != null && right.getType() != null) && left.getType().type != right.getType().type) {
 			if (right.getType().type == Scope.InnerType.INT) {
 				//Need to convert to a float
+				/* 
 				Instruction ItoFloat = new IMovf(right.temp, generateTemp(Scope.InnerType.FLOAT));
 				co.code.add(ItoFloat);
 				right.temp = ItoFloat.getDest();
 				right.type = left.getType();
 				//co.type = right.getType();
 				//node.setType(left.getType());
+				*/
+				
 			}
 		} else {
 			//co.type = node.getType();
 		}
+		
 		//Should now have rvals, which is what I want to operate on 
 
 		InstructionList il = new InstructionList();
-
-		/* 
-		//Implicit type conversion:
-		//If one operand is an int and the other is a float, the int is converted to a float.
-		//The result of the expression is a float
-		if ((left.getType() != null && right.getType() != null) && left.getType().type != right.getType().type) {
-			//Type discrepancy, so implicit conversion
-			if (left.getType().type == Scope.InnerType.INT) {
-				//Need to convert to a float
-				Instruction ItoFloat = new IMovf(left.temp, generateTemp(Scope.InnerType.FLOAT));
-				il.add(ItoFloat);
-				left.temp = ItoFloat.getDest();
-			}
-			if (right.getType().type == Scope.InnerType.INT) {
-				//Need to convert to a float
-				Instruction ItoFloat = new IMovf(right.temp, generateTemp(Scope.InnerType.FLOAT));
-				il.add(ItoFloat);
-				right.temp = ItoFloat.getDest();
-			}
-		}
-		*/
 		if (left.getType() != null) {
 		switch(left.getType().type) {
 			case PTR:
@@ -216,7 +200,7 @@ public class CodeGenerator extends AbstractASTVisitor<CodeObject> {
 					co.temp = iD.getDest();
 					break;
 				default:
-					//throw new Error("Issue with operator");
+					throw new Error("Issue with operator");
 			}
 			break;
 			case FLOAT: 
@@ -243,13 +227,13 @@ public class CodeGenerator extends AbstractASTVisitor<CodeObject> {
 					co.temp = iD.getDest();
 					break;
 				default:
-					//throw new Error("Issue with operator");
+					throw new Error("Issue with operator");
 			}
 			break;
 			case STRING: 
-				//throw new Error("Cannot perform operation on a string");
+				throw new Error("Cannot perform operation on a string");
 			default:
-				//throw new Error("Issue with binary operation" + String.valueOf(node.getType().type));
+				throw new Error("Issue with binary operation" + String.valueOf(node.getType().type));
 
 		}
 		}
@@ -461,7 +445,7 @@ public class CodeGenerator extends AbstractASTVisitor<CodeObject> {
 						co.temp = ptrSw.getDest();
 						co.type = left.getType();
 					break;
-					//default: throw new Error("Issue in load in rvalify" + String.valueOf(left.getType().type));
+					default: throw new Error("Issue in load in rvalify" + String.valueOf(left.getType().type));
 				}
 
 				co.code.addAll(il);
@@ -496,7 +480,7 @@ public class CodeGenerator extends AbstractASTVisitor<CodeObject> {
 						il.add(new Fsw(right.temp, left.temp, "0"));
 						break;
 					default:
-						//throw new Error("Not able to assign an int or float");
+						throw new Error("Not able to assign an int or float");
 				}
 				//Add instruction list code to code object
 				co.code.addAll(il);
@@ -519,7 +503,7 @@ public class CodeGenerator extends AbstractASTVisitor<CodeObject> {
 					co.code.add(new Fsw(right.temp, left.temp, "0"));
 				break;
 				default:
-					//throw new Error("Invalid type" + String.valueOf(node.getType().type));
+					throw new Error("Invalid type" + String.valueOf(node.getType().type));
 			}
 			
 			co.type = left.getType();
@@ -1572,7 +1556,7 @@ public class CodeGenerator extends AbstractASTVisitor<CodeObject> {
 					co.temp = ptrLoad.getDest();
 					co.type = lco.getType();
 				 break;
-				 //default: throw new Error("Issue in load in rvalify");
+				 default: throw new Error("Issue in load in rvalify");
 			 }
 			 il.addAll(lco.code);
 		 }
@@ -1597,8 +1581,9 @@ public class CodeGenerator extends AbstractASTVisitor<CodeObject> {
  
 			 //Generate load with no offset
 			 if (lco.getType() == null) {
-				throw new Error(String.valueOf(lco.type));
+				//throw new Error(String.valueOf(lco.type));
 			 }
+			 if (lco.getType() != null) {
 			 switch (lco.getType().type) {
 				 case INT: 
 					 Instruction loadInt = new Lw(generateTemp(Scope.InnerType.INT), lco.temp, "0");
@@ -1616,8 +1601,9 @@ public class CodeGenerator extends AbstractASTVisitor<CodeObject> {
 					co.temp = loadPtr.getDest();
 				 break;
 				 default:
-					 //throw new Error("Issue in rvalify");
+					 throw new Error("Issue in rvalify");
 			 }
+			}
 		 }
 		
 		 
