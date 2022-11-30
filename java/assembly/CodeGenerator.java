@@ -188,7 +188,7 @@ public class CodeGenerator extends AbstractASTVisitor<CodeObject> {
 			}
 		}
 		*/
-		
+		if (left.getType() != null) {
 		switch(left.getType().type) {
 			case PTR:
 			case INT: 
@@ -251,6 +251,7 @@ public class CodeGenerator extends AbstractASTVisitor<CodeObject> {
 			default:
 				throw new Error("Issue with binary operation" + String.valueOf(node.getType().type));
 
+		}
 		}
 		co.code.addAll(il);
 		co.lval = false;
@@ -744,7 +745,8 @@ public class CodeGenerator extends AbstractASTVisitor<CodeObject> {
 		}
 		co.src1 = left.temp;
 		co.src2 = right.temp;
-		if (left.getType().type == Scope.InnerType.FLOAT || right.getType().type == Scope.InnerType.FLOAT) {
+
+		if ((left.getType() != null && right.getType() != null) && (left.getType().type == Scope.InnerType.FLOAT || right.getType().type == Scope.InnerType.FLOAT)) {
 			co.floatCond = true;
 		}
 
@@ -1297,6 +1299,7 @@ public class CodeGenerator extends AbstractASTVisitor<CodeObject> {
 			il.addAll(args.get(i).code);
 
 			//Push result of argument onto stack
+			if (args.get(i).getType() != null) {
 			switch(args.get(i).getType().type) {
 				case INT: 
 					il.add(new Sw(args.get(i).temp, "sp", "0"));
@@ -1308,6 +1311,7 @@ public class CodeGenerator extends AbstractASTVisitor<CodeObject> {
 					il.add(new Sw(args.get(i).temp, "sp", "0"));
 				break;
 				default: throw new Error("Issue pushing argument onto stack");
+			}
 			}
 
 			//Move sp
