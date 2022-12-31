@@ -38,6 +38,7 @@ public class CodeGenerator extends AbstractASTVisitor<CodeObject> {
 		return floatRegCount;
 	}
 	
+	//Instructor supplied "Starter Code"
 	/**
 	 * Generate code for Variables
 	 * 
@@ -61,6 +62,7 @@ public class CodeGenerator extends AbstractASTVisitor<CodeObject> {
 		return co;
 	}
 
+	//Instructor supplied "Starter Code"
 	/** Generate code for IntLiterals
 	 * 
 	 * Use load immediate instruction to do this.
@@ -83,6 +85,7 @@ public class CodeGenerator extends AbstractASTVisitor<CodeObject> {
 		return co;
 	}
 
+	//Instructor supplied "Starter Code"
 	/** Generate code for FloatLiteras
 	 * 
 	 * Use load immediate instruction to do this.
@@ -105,34 +108,19 @@ public class CodeGenerator extends AbstractASTVisitor<CodeObject> {
 		return co;
 	}
 
-	/**
-	 * Generate code for binary operations.
-	 * 
-	 * Step 0: create new code object
-	 * Step 1: add code from left child
-	 * Step 1a: if left child is an lval, add a load to get the data
-	 * Step 2: add code from right child
-	 * Step 2a: if right child is an lval, add a load to get the data
-	 * Step 3: generate binary operation using temps from left and right
-	 * 
-	 * Don't forget to update the temp and lval fields of the code object!
-	 * 	   Hint: where is the result stored? Is this data or an address?
-	 * 
-	 */
+	//Generate code for binary operations.
 	@Override
 	protected CodeObject postprocess(BinaryOpNode node, CodeObject left, CodeObject right) {
 
 		CodeObject co = new CodeObject();
-		
-		//co.code.add(new Label("Left Type: " + String.valueOf(left.getType()) + " Right Type: " + String.valueOf(right.getType())));
+
 		//If left child is an lval, add load then add code
 		if (left.lval == true) {
 			left = rvalify(left);
 		}
-		//Same for right
-		 
-		//co.code.add(new Label("Left Code"));
+
 		co.code.addAll(left.code);
+
 		if ((left.getType() != null && right.getType() != null) && left.getType().type != right.getType().type) {
 			//Type discrepancy, so implicit conversion
 			if (left.getType().type == Scope.InnerType.INT) {
@@ -141,35 +129,25 @@ public class CodeGenerator extends AbstractASTVisitor<CodeObject> {
 				co.code.add(ItoFloat);
 				left.temp = ItoFloat.getDest();
 				left.type = right.getType();
-				//co.type = left.getType();
-				//node.setType(right.getType());
 			}
-		} else {
-			//co.type = node.getType();
-		}
+		} 
+
 		if (right.lval == true) {
 			right = rvalify(right);
 		}
-		//co.code.add(new Label("Right Code"));
+		
 		co.code.addAll(right.code);
+
 		//If left or right type is not null, and left and right type are not equal, and neither left or right type are pointers
 		if ((left.getType() != null && right.getType() != null) && left.getType().type != right.getType().type && (left.getType().type != Scope.InnerType.PTR && right.getType().type != Scope.InnerType.PTR)) {
 			if (right.getType().type == Scope.InnerType.INT) {
 				//Need to convert to a float
-				///* 
 				Instruction ItoFloat = new IMovf(right.temp, generateTemp(Scope.InnerType.FLOAT));
 				co.code.add(ItoFloat);
 				right.temp = ItoFloat.getDest();
 				right.type = left.getType();
-				//co.type = right.getType();
-				//node.setType(left.getType());
-				//*/
-				
 			}
-		} else {
-			//co.type = node.getType();
-		}
-		
+		} 
 		//Should now have rvals, which is what I want to operate on 
 
 		InstructionList il = new InstructionList();
@@ -240,26 +218,13 @@ public class CodeGenerator extends AbstractASTVisitor<CodeObject> {
 		}
 		co.code.addAll(il);
 		co.lval = false;
-		//co.type = node.getType();
-		
 		co.type = left.getType();
-		//co.code.add(new Label("Left Temp: " + left.temp + " Right Temp: " + right.temp + "Result temp: " + co.temp));
+
 
 		return co;
 	}
 
-	/**
-	 * Generate code for unary operations.
-	 * 
-	 * Step 0: create new code object
-	 * Step 1: add code from child expression
-	 * Step 1a: if child is an lval, add a load to get the data
-	 * Step 2: generate instruction to perform unary operation
-	 * 
-	 * Don't forget to update the temp and lval fields of the code object!
-	 * 	   Hint: where is the result stored? Is this data or an address?
-	 * 
-	 */
+	//Generate code for unary operations.
 	@Override
 	protected CodeObject postprocess(UnaryOpNode node, CodeObject expr) {
 		
@@ -289,19 +254,7 @@ public class CodeGenerator extends AbstractASTVisitor<CodeObject> {
 		return co;
 	}
 	
-	/*
-	 * Generate code for explicit casts 
-	 * 
-	 * Step 0: Create Code Object
-	 * Step 1: If expr is an lval, generate a load to get the data
-	 * Step 2: Using type of castnode vs expr, convert data accordingly (May not have to do this - wait)
-	 	* 2a: If castnode is a float, expr is an int, add .0 to value
-			* 
-		* 2b: If castnode is a int, expr is a float, truncate and remove decimal and values after it
-			* i = (int) f;
-	 * Step 3:Using the same types, generate correct instruction and update type & temp
-	
-	 */
+	//Generate code for explicit casts 
 	@Override
 	protected CodeObject postprocess(CastNode node, CodeObject expr) {
 
@@ -343,21 +296,9 @@ public class CodeGenerator extends AbstractASTVisitor<CodeObject> {
 		return co;
 	}
 
-	/**
-	 * Generate code for assignment statements
-	 * 
-	 * Step 0: create new code object
-	 * Step 1: if LHS is a variable, generate a load instruction to get the address into a register
-	 * Step 1a: add code from LHS of assignment (make sure it results in an lval!)
-	 * Step 2: add code from RHS of assignment
-	 * Step 2a: if right child is an lval, add a load to get the data
-	 * Step 3: generate store
-	 * 
-	 * Hint: it is going to be easiest to just generate a store with a 0 immediate
-	 * offset, and the complete store address in a register:
-	 * 
-	 * sw rhs 0(lhs)
-	 */
+
+	//Generate code for assignment statements
+	//sw rhs 0(lhs)
 	@Override
 	protected CodeObject postprocess(AssignNode node, CodeObject left,
 			CodeObject right) {
@@ -365,18 +306,6 @@ public class CodeGenerator extends AbstractASTVisitor<CodeObject> {
 		CodeObject co = new CodeObject();
 
 		assert(left.lval == true); //left hand side had better hold an address
-
-		/*
-		if (left.getType() != right.getType()) {
-			if (left.getType().type == Scope.InnerType.INT && right.getType().type == Scope.InnerType.FLOAT) {
-				//Cast RHS to an int
-				Instruction FtoInt = new FMovi(right.temp, generateTemp(Scope.InnerType.INT));
-				co.code.add(FtoInt);
-				co.temp = FtoInt.getDest();
-				co.type = left.getType();
-			}
-		}
-		*/
 
 		//Step 1a
 		if (left.isVar()) {
@@ -387,27 +316,23 @@ public class CodeGenerator extends AbstractASTVisitor<CodeObject> {
 				//If it's a local variable, need to store accounting for the offset
 
 				//Add left and right code, rvalifying if needed
-				//co.code.add(new Label("Left Temp2: " + left.temp + " Right Temp: " + right.temp));
 				co.code.addAll(left.code);
-				//co.code.add(new Label("Right before rvalify"));
-				//co.code.addAll(right.code);
-				//co.code.add(new Label("Right end after rvalify"));
+
 				if (right.lval == true) {
 					right = rvalify(right);
 				}
-				//co.code.add(new Label("Right"));
+
 				co.code.addAll(right.code);
-				//co.code.add(new Label("End right"));
+
 				
 				if (left.getType() != right.getType() && left.getType() != null && right.getType() != null) {
-					//co.code.add(new Label("Left Type: " + String.valueOf(left.getType().type) + " Right Type: " + String.valueOf(right.getType().type)));
+
 					if (left.getType().type == Scope.InnerType.INT && right.getType().type == Scope.InnerType.FLOAT) {
 						//Cast RHS to an int
 						Instruction FtoInt = new FMovi(right.temp, generateTemp(Scope.InnerType.INT));
 						co.code.add(FtoInt);
 						co.temp = FtoInt.getDest();
 						right.temp = FtoInt.getDest();
-						//co.code.add(new Label("Right temp1: " + right.temp));
 						co.type = left.getType();
 					}
 					else if (left.getType().type == Scope.InnerType.FLOAT && right.getType().type == Scope.InnerType.INT) {
@@ -416,15 +341,12 @@ public class CodeGenerator extends AbstractASTVisitor<CodeObject> {
 						co.code.add(ItoFloat);
 						co.temp = ItoFloat.getDest();
 						right.temp = ItoFloat.getDest();
-						//co.code.add(new Label("Right temp2: " + right.temp));
 						co.type = left.getType();
 					}
 					
 				}
-				
-				//co.code.add(new Label("Left Temp: " + left.temp + " Right Temp: " + right.temp));
 				//If local, store directly to offset address
-				//il.add(new Label("Right temp3: " + right.temp));
+
 				switch (left.getType().type) {
 					case INT: 
 						//Store the right side of assignment statement into the address of the left
@@ -516,6 +438,7 @@ public class CodeGenerator extends AbstractASTVisitor<CodeObject> {
 		return co;
 	}
 
+	//Instructor supplied "Starter Code"
 	/**
 	 * Add together all the lists of instructions generated by the children
 	 */
@@ -531,14 +454,8 @@ public class CodeGenerator extends AbstractASTVisitor<CodeObject> {
 		return co;
 	}
 	
-	/**
-	 * Generate code for read
-	 * 
-	 * Step 0: create new code object
-	 * Step 1: add code from VarNode (make sure it's an lval)
-	 * Step 2: generate GetI instruction, storing into temp
-	 * Step 3: generate store, to store temp in variable
-	 */
+	//Instructor supplied "Starter Code"
+	//Generate code for read
 	@Override
 	protected CodeObject postprocess(ReadNode node, CodeObject var) {
 		
@@ -595,20 +512,8 @@ public class CodeGenerator extends AbstractASTVisitor<CodeObject> {
 		return co;
 	}
 
-	/**
-	 * Generate code for print
-	 * 
-	 * Step 0: create new code object
-	 * 
-	 * If printing a string:
-	 * Step 1: add code from expression to be printed (make sure it's an lval)
-	 * Step 2: generate a PutS instruction printing the result of the expression
-	 * 
-	 * If printing an integer:
-	 * Step 1: add code from the expression to be printed
-	 * Step 1a: if it's an lval, generate a load to get the data
-	 * Step 2: Generate PutI that prints the temporary holding the expression
-	 */
+	//Instructor supplied "Starter Code"
+	//Generate code for print
 	@Override
 	protected CodeObject postprocess(WriteNode node, CodeObject expr) {
 		CodeObject co = new CodeObject();
@@ -661,31 +566,8 @@ public class CodeGenerator extends AbstractASTVisitor<CodeObject> {
 		return co;
 	}
 
-	/**
-	 * FILL IN FROM STEP 3
-	 * 
-	 * Generating an instruction sequence for a conditional expression
-	 * 
-	 * Implement this however you like. One suggestion:
-	 *
-	 * Create the code for the left and right side of the conditional, but defer
-	 * generating the branch until you process IfStatementNode or WhileNode (since you
-	 * do not know the labels yet). Modify CodeObject so you can save the necessary
-	 * information to generate the branch instruction in IfStatementNode or WhileNode
-	 * 
-	 * Alternate idea 1:
-	 * 
-	 * Don't do anything as part of CodeGenerator. Create a new visitor class
-	 * that you invoke *within* your processing of IfStatementNode or WhileNode
-	 * 
-	 * Alternate idea 2:
-	 * 
-	 * Create the branch instruction in this function, then tweak it as necessary in
-	 * IfStatementNode or WhileNode
-	 * 
-	 * Hint: you may need to preserve extra information in the returned CodeObject to
-	 * make sure you know the type of branch code to generate (int vs float)
-	 */
+
+	//Generating an instruction sequence for a conditional expression
 	@Override
 	protected CodeObject postprocess(CondNode node, CodeObject left, CodeObject right) {
 		CodeObject co = new CodeObject();
@@ -738,29 +620,7 @@ public class CodeGenerator extends AbstractASTVisitor<CodeObject> {
 		return co;
 	}
 
-	/**
-	 * FILL IN FROM STEP 3
-	 * 
-	 * Step 0: Create code object
-	 * 
-	 * Step 1: generate labels
-	 * 
-	 * Step 2: add code from conditional expression
-	 * 
-	 * Step 3: create branch statement (if not created as part of step 2)
-	 * 			don't forget to generate correct branch based on type
-	 * 
-	 * Step 4: generate code
-	 * 		<cond code>
-	 *		<flipped branch> elseLabel
-	 *		<then code>
-	 *		j outLabel
-	 *		elseLabel:
-	 *		<else code>
-	 *		outLabel:
-	 *
-	 * Step 5 insert code into code object in appropriate order.
-	 */
+	//Generating instruction sequence for if/else statements
 	@Override
 	protected CodeObject postprocess(IfStatementNode node, CodeObject cond, CodeObject tlist, CodeObject elist) {
 		//Step 0:
@@ -877,28 +737,7 @@ public class CodeGenerator extends AbstractASTVisitor<CodeObject> {
 		return co;
 	}
 
-		/**
-	 * FILL IN FROM STEP 3
-	 * 
-	 * Step 0: Create code object
-	 * 
-	 * Step 1: generate labels
-	 * 
-	 * Step 2: add code from conditional expression
-	 * 
-	 * Step 3: create branch statement (if not created as part of step 2)
-	 * 			don't forget to generate correct branch based on type
-	 * 
-	 * Step 4: generate code
-	 * 		loopLabel:
-	 *		<cond code>
-	 *		<flipped branch> outLabel
-	 *		<body code>
-	 *		j loopLabel
-	 *		outLabel:
-	 *
-	 * Step 5 insert code into code object in appropriate order.
-	 */
+	//Generate instruction sequence for while loops
 	@Override
 	protected CodeObject postprocess(WhileNode node, CodeObject cond, CodeObject slist) {
 		//Step 0:
@@ -1021,19 +860,7 @@ public class CodeGenerator extends AbstractASTVisitor<CodeObject> {
 		return co;
 	}
 
-	/**
-	 * FILL IN FOR STEP 4
-	 * 
-	 * Generating code for returns
-	 * 
-	 * Step 0: Generate new code object
-	 * 
-	 * Step 1: Add retExpr code to code object (rvalify if necessary)
-	 * 
-	 * Step 2: Store result of retExpr in appropriate place on stack (fp + 8)
-	 * 
-	 * Step 3: Jump to out label (use @link{generateFunctionOutLabel()})
-	 */
+	//Generate code for returns
 	@Override
 	protected CodeObject postprocess(ReturnNode node, CodeObject retExpr) {
 		CodeObject co = new CodeObject();
@@ -1069,6 +896,7 @@ public class CodeGenerator extends AbstractASTVisitor<CodeObject> {
 		return co;
 	}
 
+	//Instructor supplied "Starter Code"
 	@Override
 	protected void preprocess(FunctionNode node) {
 		// Generate function label information, used for other labels inside function
@@ -1079,31 +907,8 @@ public class CodeGenerator extends AbstractASTVisitor<CodeObject> {
 		floatRegCount = 0;
 	}
 
-	/**
-	 * FILL IN FOR STEP 4
-	 * 
-	 * Generate code for functions
-	 * 
-	 * Step 1: add the label for the beginning of the function
-	 * 
-	 * Step 2: manage frame  pointer
-	 * 			a. Save old frame pointer
-	 * 			b. Move frame pointer to point to base of activation record (current sp)
-	 * 			c. Update stack pointer
-	 * 
-	 * Step 3: allocate new stack frame (use scope infromation from FunctionNode)
-	 * 
-	 * Step 4: save registers on stack (Can inspect intRegCount and floatRegCount to know what to save)
-	 * 
-	 * Step 5: add the code from the function body
-	 * 
-	 * Step 6: add post-processing code:
-	 * 			a. Label for `return` statements inside function body to jump to
-	 * 			b. Restore registers
-	 * 			c. Deallocate stack frame (set stack pointer to frame pointer)
-	 * 			d. Reset fp to old location
-	 * 			e. Return from function
-	 */
+
+	//Generate code for functions
 	@Override
 	protected CodeObject postprocess(FunctionNode node, CodeObject body) {
 		CodeObject co = new CodeObject();
@@ -1129,7 +934,6 @@ public class CodeGenerator extends AbstractASTVisitor<CodeObject> {
 		//Create space for all local variables? Get quantity from node's symbol table 
 		//Move stack pointer down the value of node's scope's local quantity multiplied by 4
 		il.add(new Addi("sp", "-" + String.valueOf((4*node.getScope().getNumLocals())), "sp"));
-		//I guess
 
 		//4. Save registers on stack
 		/*
@@ -1199,17 +1003,9 @@ public class CodeGenerator extends AbstractASTVisitor<CodeObject> {
 		return co;
 	}
 
-	/**
-	 * Generate code for the list of functions. This is the "top level" code generation function
-	 * 
-	 * Step 1: Set fp to point to sp
-	 * 
-	 * Step 2: Insert a JR to main
-	 * 
-	 * Step 3: Insert a HALT
-	 * 
-	 * Step 4: Include all the code of the functions
-	 */
+	
+	//Instructor supplied "Starter Code"
+	//Generate code for the list of functions. This is the "top level" code generation function
 	@Override
 	protected CodeObject postprocess(FunctionListNode node, List<CodeObject> funcs) {
 		CodeObject co = new CodeObject();
@@ -1228,36 +1024,8 @@ public class CodeGenerator extends AbstractASTVisitor<CodeObject> {
 		return co;
 	}
 
-	/**
-	* 
-	* FILL IN FOR STEP 4
-	* 
-	* Generate code for a call expression
-	 * 
-	 * Step 1: For each argument:
-	 * 
-	 * 	Step 1a: insert code of argument (don't forget to rvalify!)
-	 * 
-	 * 	Step 1b: push result of argument onto stack 
-	 * 
-	 * Step 2: alloate space for return value
-	 * 
-	 * Step 3: push current return address onto stack
-	 * 
-	 * Step 4: jump to function
-	 * 
-	 * Step 5: pop return address back from stack
-	 * 
-	 * Step 6: pop return value into fresh temporary (destination of call expression)
-	 * 
-	 * Step 7: remove arguments from stack (move sp)
-	 * 
-	 * Add special handling for malloc and free
-	 */
 
-	 /**
-	  * FOR STEP 6: Make sure to handle VOID functions properly
-	  */
+	//Generate code for a call expression
 	@Override
 	protected CodeObject postprocess(CallNode node, List<CodeObject> args) {
 		
@@ -1352,55 +1120,26 @@ public class CodeGenerator extends AbstractASTVisitor<CodeObject> {
 		return co;
 	}	
 	
-	/**
-	 * Generate code for * (expr)
-	 * 
-	 * Goal: convert the r-val coming from expr (a computed address) into an l-val (an address that can be loaded/stored)
-	 * 
-	 * Step 0: Create new code object
-	 * 
-	 * Step 1: Rvalify expr if needed
-	 * 
-	 * Step 2: Copy code from expr (including any rvalification) into new code object
-	 * 
-	 * Step 3: New code object has same temporary as old code, but now is marked as an l-val
-	 * 
-	 * Step 4: New code object has an "unwrapped" type: if type of expr is * T, type of temporary is T. Can get this from node
-	 */
+	//Generate code for * (expr)
 	@Override
 	protected CodeObject postprocess(PtrDerefNode node, CodeObject expr) {
 		CodeObject co = new CodeObject();
 
-		/* FILL IN FOR STEP 6 */
 		if (expr.lval == true) {
 			expr = rvalify(expr);
 		}
-		//co.code.add(new Label(String.valueOf(expr.temp)));
+
 		co.code.addAll(expr.code);
-		//co.code.add(new Label(String.valueOf(expr.temp)));
 
 		co.type = node.getType();
 		co.temp = expr.temp;
-		//co.code.add(new Label(String.valueOf(expr.temp)));
 		co.lval = true;
 
 		return co;
 	}
 
-	/**
-	 * Generate code for a & (expr)
-	 * 
-	 * Goal: convert the lval coming from expr (an address) to an r-val (a piece of data that can be used)
-	 * 
-	 * Step 0: Create new code object
-	 * 
-	 * Step 1: If lval is a variable, generate code to put address into a register (e.g., generateAddressFromVar)
-	 *			Otherwise just copy code from other code object
-	 * 
-	 * Step 2: New code object has same temporary as existing code, but is an r-val
-	 * 
-	 * Step 3: New code object has a "wrapped" type. If type of expr is T, type of temporary is *T. Can get this from node
-	 */
+	
+	//Generate code for a & (expr)
 	@Override
 	protected CodeObject postprocess(AddrOfNode node, CodeObject expr) {
 		CodeObject co = new CodeObject();
@@ -1418,22 +1157,11 @@ public class CodeGenerator extends AbstractASTVisitor<CodeObject> {
 		return co;
 	}
 
-	/**
-	 * Generate code for malloc
-	 * 
-	 * Step 0: Create new code object
-	 * 
-	 * Step 1: Add code from expression (rvalify if needed)
-	 * 
-	 * Step 2: Create new MALLOC instruction
-	 * 
-	 * Step 3: Set code object type to INFER
-	 */
+	//Generate code for malloc
 	@Override
 	protected CodeObject postprocess(MallocNode node, CodeObject expr) {
 		CodeObject co = new CodeObject();
 
-		/* FILL IN FOR STEP 6 */
 		if (expr.lval) {
 			expr = rvalify(expr);
 		}
@@ -1448,15 +1176,8 @@ public class CodeGenerator extends AbstractASTVisitor<CodeObject> {
 		return co;
 	}
 	
-	/**
-	 * Generate code for free
-	 * 
-	 * Step 0: Create new code object
-	 * 
-	 * Step 1: Add code from expression (rvalify if needed)
-	 * 
-	 * Step 2: Create new FREE instruction
-	 */
+
+	//Generate code for free
 	@Override
 	protected CodeObject postprocess(FreeNode node, CodeObject expr) {
 		CodeObject co = new CodeObject();
@@ -1472,6 +1193,7 @@ public class CodeGenerator extends AbstractASTVisitor<CodeObject> {
 		return co;
 	}
 
+	//Instructor supplied "Starter Code"
 	/**
 	 * Generate a fresh temporary
 	 * 
@@ -1533,10 +1255,9 @@ public class CodeGenerator extends AbstractASTVisitor<CodeObject> {
 		 CodeObject co = new CodeObject();
  
 		 InstructionList il = new InstructionList();
-		 //il.add(new Label("Rvalify: " + String.valueOf(lco.temp)));
 		 
 		 if (lco.getSTE() != null && lco.getSTE().isLocal()) {
-			//il.add(new Label("Rvalify: " + String.valueOf(lco.getSTE().getName())));
+
 			 //If lco is a local variable, need to generate load with offset relative to frame pointer
 			 switch (lco.getType().type) {
 				 case INT: 
@@ -1615,6 +1336,7 @@ public class CodeGenerator extends AbstractASTVisitor<CodeObject> {
 		return co;
 	}
 
+	//Instructor supplied "Starter Code"
 	/**
 	 * Generate an instruction sequence that holds the address of the variable in a code object
 	 * 

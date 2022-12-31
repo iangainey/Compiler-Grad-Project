@@ -1,6 +1,7 @@
 package assembly.instructions;
 
 /*
+ * Not instructor supplied
  * Class corresponding to RISC-V IMOVF.S instructoion
  * 
  * Models: IMOVF.S dest src

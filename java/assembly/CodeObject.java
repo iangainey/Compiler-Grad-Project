@@ -20,9 +20,9 @@ public class CodeObject {
 	Scope.Type type; //type of value stored in temp if rval, type of value in address if lval
 	boolean lval; //true if lvalue, false if rvalue
 	SymbolTableEntry ste; //null if there is no variable, non-null if there is a variable
-	String branch;
-	String src1;
-	String src2;
+	String branch; //Store branch info for conditional
+	String src1; //Save information for conditional eval
+	String src2; //Save information for conditional eval
 	boolean floatCond = false;
 	
 	public CodeObject() {
