@@ -13,6 +13,8 @@ import compiler.Scope;
 import compiler.Scope.SymbolTableEntry;
 import compiler.LocalScope;
 
+//Not instructor supplied
+
 public class LocalRegisterAllocator extends CodeGenerator{
 
     RegisterFile registers = new RegisterFile();
@@ -74,11 +76,7 @@ public class LocalRegisterAllocator extends CodeGenerator{
                 if (BB.isEmpty()) {
                     //If empty, first statement is leader
                     BB = new InstructionList();
-                    //BB.add(new Blank("Start of BB"));
                     BB.add(stmt);
-                    //if (String.valueOf(stmt).contains("out") && String.valueOf(stmt).contains("J") == false) {
-                        //throw new Error(String.valueOf(stmt));
-                    //}
                     if (i == body.code.nodes.size()-1) {
                         //If last statement (or only)
                         BBs.add(BB);
@@ -88,14 +86,12 @@ public class LocalRegisterAllocator extends CodeGenerator{
                     //if not empty, and statement is label, new basic block
                     BBs.add(BB);
                     BB = new InstructionList();
-                    //BB.add(new Blank("Start of BB"));
                     BB.add(stmt);
                     
                 }
                 else if((op == "BEQ" || op == "BGE" || op == "BGT" || op == "BLE" || op == "BLT" || op == "BNE" || op == "J") && op != null) {
                     //If a branch or jump, end basic block w/it
                     BB.add(stmt);
-                    //BB.add(new Blank("End of BB"));
                     //Add basic block to list of blocks
                     BBs.add(BB);
                     //Overwrite BB w/a new list to create a new basic block
@@ -128,21 +124,7 @@ public class LocalRegisterAllocator extends CodeGenerator{
             
                 //For each instruction
                 Instruction stmt = bb.nodes.get(i);
-    
-                //Beginning of basic blocks:
-                    //First line of program
-                    //Labels
-                    //First line after a branch
-                //End of basic blocks:
-                    //J's
-                    //Branch
-                    //When a label is the next instruction
-    
-                //When to call saves
-                    //Before a branch
-                    //Before a label
-                    //Before a j
-                
+
                 String oc = String.valueOf(stmt.getOC());
             //Branch Statement: Branch is the last instruction in a basic block. Check,
             //If it's not, throw an error. If it is, convert the 3AC code to assembly,
@@ -155,15 +137,13 @@ public class LocalRegisterAllocator extends CodeGenerator{
                 temp.addAll(new macroExpandBranch(stmt).toReturn());
 
                 for (int ins = 0; ins < temp.size(); ins++) {
-                    //il.add(new Blank("Before: " + temp.nodes.get(ins)));
+
                     if (branchOps.contains(String.valueOf(temp.nodes.get(ins).getOC()))) {
                         //If a branch statement
-                        //il.add(new Blank("HIT: " + temp.nodes.get(ins)));
                         il.add(new Blank("Saving registers at end of BB"));
                         il.addAll(registers.saveRegsEndBB());
                         il.add(temp.nodes.get(ins));
                     } else {
-                        //il.add(new Blank("Else'd: " + temp.nodes.get(ins)));
                         il.add(temp.nodes.get(ins));
                     }
                 }
@@ -198,9 +178,6 @@ public class LocalRegisterAllocator extends CodeGenerator{
             else if (oc == "LW" || oc == "FLW") {
                 il.addAll(new macroExpandLoadWrd(stmt).toReturn());
             }
-            //else if (oc == "FLT.S" || oc == "FLE.S" || oc == "FEQ.S") {
-                //il.addAll()
-            //}
             //Jump: If opcode is J, NOT JR, need to get a return value and store appropriatly
             //Return val sould be in destination of previous statement added to il
             //After return val is obtained, need to save registers, then generate appropriate 
@@ -492,7 +469,7 @@ public class LocalRegisterAllocator extends CodeGenerator{
                 assert(src.length() > 2);
                 SymbolTableEntry ste = funcScope.getSymbolTableEntry(src.substring(2));
                 if (ste != null) {
-                    //reg = registers.getx3();
+                    //Use x3 for globals
                     String address = ste.addressToString(); 
                     il.add(new La("x3", address));
                     switch(type) {
@@ -512,18 +489,14 @@ public class LocalRegisterAllocator extends CodeGenerator{
             }
 
             //Get a free register
-            
             //Step 2: If src is not in a register, load it into one
             //Find if src is a variable or a temporary or just a number
-
             
             //If src is a global variable:
             //Generate a la to register x3 from the variables register
             //Then, generate a lw to to the new register from x3, with 0 offset
             //Now, global variable is loaded into the register that will be returned
             
-            
-
             //If src is a temporary, no need to generate anything be loaded into it,
             //just put in register and return register
             else if (src.contains("$t")) {
@@ -556,21 +529,10 @@ public class LocalRegisterAllocator extends CodeGenerator{
                     //Not dirty, just loaded from memory
                 }
             }
-            //Also: Will I need to handle sp and ra? How could this be done better?
-            //Sometimes sp may be in the baseAddress (src). To handle, don't assign a register
-            //just perform the operations needed manually using sp
-            //Can also have a Lw ra, 0(sp). 
-            //Want to handle sp and ra by checking for a $ sign, if so, converting as needed,
-            //but they shouldn't use a register...
 
-            //If its an ra, just put the same line of code down.
-            //If its an sp, will need to handle proper storing. I think they will only be stores
             else if (src.contains("ra") && src.contains("$") == false) {
                 //Actually, should only ever be a store, dest will only ever have an Lw
                 il.add(new Sw("ra", "sp", "0"));
-            }
-            else if (src.contains("sp") && src.contains("$") == false) {
-                //Dont think i'll do anything here - may just need dest for Lw ra 0(sp)
             }
 
         }
@@ -584,8 +546,7 @@ public class LocalRegisterAllocator extends CodeGenerator{
         Register reg = null;
         //Find if reg is already in a register
         reg = registers.findMappedReg(dest, type);
-        //il.add(new Blank("Reg " + reg.name + " marked as dirty"));
-        
+
         if (reg == null) {
             //Reg is not in a register
             reg = registers.findReg(type);
@@ -614,11 +575,6 @@ public class LocalRegisterAllocator extends CodeGenerator{
 
         reg.dirty = true; //Even if already in a reg, this is a dest so dirty
 
-        //Uncomment for testing
-        //il.add(new Blank("Reg " + reg.name + " marked as dirty"));
-
-        //Uncomment for testing
-        //il.add(new Blank("Dest Reg: " + reg.name + " holds: " + dest));
         return reg;
     }
 
@@ -920,106 +876,9 @@ public class LocalRegisterAllocator extends CodeGenerator{
             return il;
         }
 
-        /*
-        public InstructionList saveRegsEndBB() {
-            //Save and clear regs
-            //SAVE TEMPORARIES AS A NEW LOCAL VAR!
-            Vector<String> savedRegs = new Vector<String>();
-            InstructionList il = new InstructionList();
-            for (int i = 0; i < registerListInt.size(); i++) {
-                //il.add(new Blank("Before: " + registerListInt.get(i).name));
-                //il.add(new Blank("Current: " + registerListInt.get(i).name + " is " + String.valueOf(registerListInt.get(i).dirty)));
-                if (registerListInt.get(i).dirty) {
-                    if ("x3".equals(registerListInt.get(i).name)) {
-                        continue;
-                    }
-                    
-                    //Generate store
-                    //Want Sw reg 0(location)
-                    Register currReg = registerListInt.get(i);
-
-                    //il.add(new Blank("Dirty saved: " + registerListInt.get(i).name + " holding: " + currReg.holds));
-                    if (savedRegs.contains(currReg.name)) {
-                        //il.add(new Blank("Skipped over: " + currReg.name));
-                        continue;
-                    }
-                    if (currReg.holds == null) {
-                        //Dont need to save!
-                    }
-                    else {
-                    if ((currReg.name.contains("x")) && (currReg.holds.contains("$t") == false) && (currReg.holds.contains("sp") == false)) {
-                        //Not a temporary, don't need to save temps to stack
-                        //il.add(new Blank("Saved: " + currReg.name));
-                        String name = currReg.holds.substring(2);
-                        SymbolTableEntry ste = funcScope.getSymbolTableEntry(name);
-                        if (ste == null) {
-                           //throw new Error(currReg.name);
-                        } else {
-                            String address = ste.addressToString();
-                            il.add(new La("x3", address));
-                            il.add(new Sw(currReg.name, "x3", "0"));
-                            savedRegs.add(currReg.name);
-                        }
-                        
-                    }
-                    if (currReg.holds.contains("$l")) {
-                        //Local var, generate store w/offset
-                        String offset = currReg.holds.substring(2);
-                        //il.add(new Blank(currReg.name + " holds: " + currReg.holds));
-                        il.add(new Sw(currReg.name, "fp", offset));
-                    }
-                    if (savedRegs.contains(currReg.name) == false) {
-                        intRegsToSave.add(currReg);
-                    }
-                    registerListInt.get(i).dirty = false;
-                    
-                    
-                }
-
-                    //il.add(new Blank("Wiped: " + currReg.name));
-                }
-                registerListInt.get(i).holds = null;
-                
-                //il.add(new Blank(registerListInt.get(i).name + "holds: " + registerListInt.get(i).holds));
-            }
-            for (int i = 0; i < registerListFloat.size(); i++) {
-                if (registerListFloat.get(i).dirty) {
-                    //Generate store
-                    //Want Sw reg 0(location)
-                    Register currReg = registerListFloat.get(i);
-                    if (savedRegs.contains(currReg.name)) {
-                        continue;
-                    }
-                    if (currReg.holds == null) {
-                        //Dont need to save!
-                    } else {
-                    if ((currReg.name.contains("f")) && (currReg.holds.contains("$f") == false) && (currReg.holds.contains("sp") == false)) {
-                        //Not a temporary, don't need to save temps to stack
-                        String name = currReg.holds.substring(2);
-                        SymbolTableEntry ste = funcScope.getSymbolTableEntry(name);
-                        if (ste == null) {
-                            //throw new Error(currReg.holds);
-                        } else {
-                        String address = ste.addressToString();
-                        il.add(new La("x3", address));
-                        il.add(new Fsw(currReg.name, "x3", "0"));
-                        savedRegs.add(currReg.name);
-                        }
-                    }
-                    if (savedRegs.contains(currReg.name) == false) {
-                        floatRegsToSave.add(currReg);
-                    }
-                    
-                    registerListFloat.get(i).dirty = false;
-                }
-                }
-            }
-            return il;
-        }
-        */
         
         public void generateRegisterSpill(Register reg, Scope.Type typ) {
-
+                //Not necessary for assignment due to tests, may be fun to add at somepoint
         }
     
     }

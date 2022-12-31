@@ -1,0 +1,9 @@
+Initializing machine with 32 registers
+Compute GCD(x, y) using Euclid's algorithm 
+Enter x: Enter y: 23
+24
+1
+23
+0
+1
+GCD(x, y) = 1
