@@ -62,6 +62,27 @@ The subsequent comparisons are used through reversing polarity of these operator
 
 ### Functions
 
+This compiler also supports a C language with functions.
+This part of the code generation uses the stack to pass arguments to and return values from functions. This section can be seen in CodeGenerator.java beginning around line 910.  
+
+Overall, the process followed by this compiler when a function is called can be broken down into the following steps:  
+- Generate function label
+- Push function arguments to stack
+- Allocate space for return value
+- Save the return address of the calling function on the stack
+- Jump to the called function
+- Save the old frame pointer of the calling function
+- Set the frame pointer to the top of the stack
+- Allocate space on the stakc for local variables of called function
+- Save registers that may be written to in the called function
+
+When a return statement is called in the function, the steps taken are:
+- Push return value to appropriate location on the stack (Where space was allocated previously)
+- Jump to functions out label
+- Restore all saved registers to their previous state
+- Deallocate stack frame by resetting the stack pointer to the top of the caller's activation record
+- Resetting the frame pointer back to the caller's frame pointer location
+- Return to calling function
 
 ### Pointers
 
