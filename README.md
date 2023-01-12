@@ -63,34 +63,112 @@ The subsequent comparisons are used through reversing polarity of these operator
 ### Functions
 
 This compiler also supports a C language with functions.
-This part of the code generation uses the stack to pass arguments to and return values from functions. This section can be seen in CodeGenerator.java beginning around line 910.  
+These functions can have integer, float, or void return types.
+This part of the code generation uses the stack to pass arguments to and return values from functions. This process can be seen starting at line 1030 in CodeGenerator.java 
 
 Overall, the process followed by this compiler when a function is called can be broken down into the following steps:  
-- Generate function label
 - Push function arguments to stack
 - Allocate space for return value
 - Save the return address of the calling function on the stack
 - Jump to the called function
 - Save the old frame pointer of the calling function
 - Set the frame pointer to the top of the stack
-- Allocate space on the stakc for local variables of called function
+- Allocate space on the stack for local variables of called function
 - Save registers that may be written to in the called function
+Then, the function can execute. This section can be seen in CodeGenerator.java beginning around line 910.  
+
 
 When a return statement is called in the function, the steps taken are:
 - Push return value to appropriate location on the stack (Where space was allocated previously)
 - Jump to functions out label
 - Restore all saved registers to their previous state
-- Deallocate stack frame by resetting the stack pointer to the top of the caller's activation record
+- Deallocate function stack frame by resetting the stack pointer to the top of the caller's activation record
 - Resetting the frame pointer back to the caller's frame pointer location
 - Return to calling function
 
 ### Pointers
+This language supports both pointer dereferencing and address of expressions.  
+Pointer Dereferencing Syntax, which dereferences the pointer expr:
+```
+* expr;  
+```
+
+Address of Expression Syntax, this gets the address of a pointer expr:
+```
+& expr;  
+```
+
+This language also supports pointer arithmetic, through treating the address stored in a pointer as an integer type:
+ptr has an address of 0x100  
+The operation * (ptr + 10) will result in an address of 0x110  
+
+The code generation for pointer dereferencing can e found at line 1125 in CodeGenerator.java  
+This is performed by first insuring the expr in the dereference operation is an r-value, and then adding the code passed up through the AST to it. Then, the type it points to is modified to represent a pointer type  
+
+The code generation for address of operations can be found at line 1144 in CodeGenerator.java  
+This is performed through getting the appropriate address of a variable, inheriting the type of what it points to, and loading the address from the appropriate scope (global or local)
 
 ### Arrays
+This language supports arrays, but does not support array types. Instead, it uses pointers and pointer arithmetic to reference the proper index of an array.  
+
+An example of adding a value to an array arr at index ind:
+```
+int * arr;
+arr[ind] = value;
+```
+Or, in addition to the above block, to set var equal to a value fram an array arr at an index ind:
+```
+var = arr[ind];
+```
+
+The supporting methods to this is through using addresses and pointer arithmetic in the form of:
+```
+arr[index] = (arr + index * size_of_type);
+```
+Where size of type is the size of the type of data stored in the array in bytes.  
+This process can be seen in the Micro.g4 grammar file around line 180
 
 ### Memory Allocation
+This language supports allocating memory on the heap through use of malloc and free.  
+
+The code generation for malloc can be seen at line 1161 in CodeGenerator.java  
+This is accomplished through generating an instruction malloc that takes an argument of the temorary that holds the data to be stored on the heap, and an address to store it at on the heap. Malloc will allocate a number of bytes on the heap equal to the size in bytes of the data stored in the temporary passed into malloc.  
+
+The code generation for free can be seen at line 1182 of CodeGenerator.java.  
+This is accomplished through generating an instruction free that takes the location on the heap to be freed as an argument. If a variable is passed to free, it will free the address stored in that variable, as it expects the vairable to be a pointer.  
+
 
 ### Type Conversion
+This language supports integer and float data types. It also supports both casting and type conversion between these types.  
+
+Casting is accomplished starting at line 259 in CodeGenerator.java  
+The type to cast to is passed up the AST to the CastNode, and the appropriate Risc-V instruction is generated depening on the cast type. The type information of the vairable is then updated to reflect the new type.  
+
+The syntax for a cast, or explicit conversion, is:
+```
+float x;
+int y;
+y = (int) x;
+```
+This section of uC code convert the value at x from a float to an integer, and then assigns this integer value to integer y.  
+
+Implicit Type Conversions, or Type Promotions, are supported according to the following rules:
+- In a binary expression, if one of the 2 operands is an integer and the other operand is a float: Implicity cast the integer to a float
+  * ```
+    float x; 
+    int y;
+    x = 2.0;
+    y = 3;
+    return (x + y)
+    ```
+    In this case, the operation would add 2.0 and 3.0, returning 5.0
+- In an assigment statement, either:
+  * If left-hand side operand is an integer, and right-hand side operand is a float, cast the RHS to an integer
+  * If left-hand side operand is a float, and right-hand side operand is an integer, cast the RHS to a foat
+
+The code generation for binary expression implicit conversions can be found beginning at line 124 in CodeGenerator.java   
+The code generation for assignment type conversions can be found starting at line 330 in CodeGenerator.java  
+
 
 ### Intermediate Representation
 
