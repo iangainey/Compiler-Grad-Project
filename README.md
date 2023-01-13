@@ -213,4 +213,5 @@ The basis of the grammar was provided by the course. Grammar used in implementin
 
 ## Sources
 
-https://riscv.org//wp-content/uploads/2017/05/riscv-spec-v2.2.pdf
+“The RISC-V Instruction Set Manual, Volume I: User-Level ISA, Document Version
+2.2”, Editors Andrew Waterman and Krste Asanovi´c, RISC-V Foundation, May 2017.
